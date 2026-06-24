@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robin Upadhyay | Security Engineer</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.2);
+            --card-bg: #161b22;
+            --border: #30363d;
+            --font-mono: 'Courier New', Courier, monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Layout & Cards */
+        .section-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .section-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: #ffffff;
+        }
+
+        .card-meta {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Skills Grid */
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .skill-tag {
+            background-color: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-family: var(--font-mono);
+        }
+
+        /* Terminal Prompt Effect */
+        .prompt::before {
+            content: "kali@root:~# ";
+            color: #3fb950;
+            font-family: var(--font-mono);
+        }
+
+        /* Links */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card-header {
+                flex-direction: column;
+            }
+            .card-meta {
+                margin-top: 0.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="prompt">Robin Upadhyay</h1>
+        <p class="subtitle">Security Engineer & Penetration Tester</p>
+        <p>Offensive security professional specializing in Vulnerability Assessment and Penetration Testing (VAPT), Active Directory exploitation, and application security. Passionate about automating security workflows and building resilient infrastructure.</p>
+    </header>
+
+    <main>
+        <section id="experience">
+            <h2>> experience.txt</h2>
+            
+            <div class="section-card">
+                <div class="card-header">
+                    <h3 class="card-title">Application Security</h3>
+                    <span class="card-meta">ArmorCode Inc. | Present</span>
+                </div>
+                <p>Securing application delivery pipelines, managing vulnerability triage, and orchestrating application security posture. Bridging the gap between development and security teams to ensure secure coding practices.</p>
+            </div>
+        </section>
+
+        <section id="projects">
+            <h2>> homelab_&_projects.sh</h2>
+
+            <div class="section-card">
+                <div class="card-header">
+                    <h3 class="card-title">Windows AD Exploitation Lab</h3>
+                    <span class="card-meta">Internal Network</span>
+                </div>
+                <p>Designed and deployed a customized Active Directory lab environment for testing offensive techniques. Developed malicious macro payloads (<code>.odt</code> formats) and established reverse shell connections using built-in Windows binaries to simulate real-world threat actor behavior.</p>
+            </div>
+
+            <div class="section-card">
+                <div class="card-header">
+                    <h3 class="card-title">Custom Linux Desktop Environments</h3>
+                    <span class="card-meta">Arch/Kali</span>
+                </div>
+                <p>Extensive experience configuring, troubleshooting, and "ricing" Linux desktop environments including Hyprland, KDE Plasma, and XFCE. Optimized dual-monitor setups with hybrid graphics (NVIDIA + Integrated) for seamless workflow efficiency.</p>
+            </div>
+        </section>
+
+        <section id="skills">
+            <h2>> skills_&_certs.json</h2>
+            
+            <div class="section-card">
+                <div class="card-header">
+                    <h3 class="card-title">Certifications & Training</h3>
+                </div>
+                <p><strong>CompTIA PenTest+</strong> (Preparation / Udemy Training Completed)</p>
+            </div>
+
+            <div class="section-card">
+                <div class="card-header">
+                    <h3 class="card-title">Core Competencies</h3>
+                </div>
+                <div class="skills-grid">
+                    <span class="skill-tag">Penetration Testing (VAPT)</span>
+                    <span class="skill-tag">Application Security</span>
+                    <span class="skill-tag">Active Directory</span>
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">Kali Linux</span>
+                    <span class="skill-tag">Vulnerability Management</span>
+                    <span class="skill-tag">Hardware Troubleshooting</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>> contact.py</h2>
+            <div class="section-card">
+                <p>Currently open to networking with other security professionals and discussing all things offensive security.</p>
+                <p>
+                    <strong>Email:</strong> <a href="mailto:contact@example.com">contact@example.com</a><br>
+                    <strong>GitHub:</strong> <a href="#">github.com/yourusername</a><br>
+                    <strong>LinkedIn:</strong> <a href="#">linkedin.com/in/yourusername</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>
