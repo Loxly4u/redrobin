@@ -1,0 +1,58 @@
+import { AnimatePresence, motion } from 'framer-motion'
+import { Route, Routes, useLocation } from 'react-router-dom'
+import Footer from './components/Footer'
+import Header from './components/Header'
+import AboutResume from './routes/AboutResume'
+import Arsenal from './routes/Arsenal'
+import CaseStudies from './routes/CaseStudies'
+import Home from './routes/Home'
+import Methodology from './routes/Methodology'
+import PentestChecklist from './routes/PentestChecklist'
+import ResearchAdvisories from './routes/ResearchAdvisories'
+
+const pageVariants = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -16 },
+}
+
+const pageTransition = {
+  duration: 0.35,
+  ease: 'easeOut',
+}
+
+function App() {
+  const location = useLocation()
+
+  return (
+    <div className="min-h-screen bg-bg text-fg">
+      <Header />
+      <main className="mx-auto max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pageVariants}
+            transition={pageTransition}
+            className="space-y-10"
+          >
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<Home />} />
+              <Route path="/methodology" element={<Methodology />} />
+              <Route path="/case-studies" element={<CaseStudies />} />
+              <Route path="/research-and-advisories" element={<ResearchAdvisories />} />
+              <Route path="/arsenal" element={<Arsenal />} />
+              <Route path="/pentest-checklist" element={<PentestChecklist />} />
+              <Route path="/about-and-resume" element={<AboutResume />} />
+            </Routes>
+          </motion.div>
+        </AnimatePresence>
+      </main>
+      <Footer />
+    </div>
+  )
+}
+
+export default App
