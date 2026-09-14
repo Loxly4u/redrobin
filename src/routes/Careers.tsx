@@ -29,6 +29,8 @@ const fallbackOpportunities: Opportunity[] = [
   },
 ]
 
+const careersCsvUrl = import.meta.env.VITE_CAREERS_SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7M3jX2zR3OFRYPL8OQmZDrTFiUvhgAMqmAef3aI0JbsW7U4b2CJR0DuH6gTaqtblZHETcHJ17zrP4/pub?gid=0&single=true&output=csv'
+
 const normalizeHeader = (header: string) => header.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
 
 const parseCsv = (csv: string): Opportunity[] => {
@@ -102,9 +104,9 @@ function Careers() {
   const [password, setPassword] = useState('')
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<'all' | 'open' | 'applied'>('all')
-  const [isLoading, setIsLoading] = useState(Boolean(import.meta.env.VITE_CAREERS_SHEET_CSV_URL))
+  const [isLoading, setIsLoading] = useState(Boolean(careersCsvUrl))
   const [loadError, setLoadError] = useState('')
-  const [isUsingFallback, setIsUsingFallback] = useState(!import.meta.env.VITE_CAREERS_SHEET_CSV_URL)
+  const [isUsingFallback, setIsUsingFallback] = useState(!careersCsvUrl)
 
   useEffect(() => {
     if (!supabase) {
@@ -140,10 +142,7 @@ function Careers() {
   }, [session])
 
   useEffect(() => {
-    const csvUrl = import.meta.env.VITE_CAREERS_SHEET_CSV_URL
-    if (!csvUrl) return
-
-    fetch(`${csvUrl}${csvUrl.includes('?') ? '&' : '?'}t=${Date.now()}`)
+    fetch(`${careersCsvUrl}${careersCsvUrl.includes('?') ? '&' : '?'}t=${Date.now()}`)
       .then((response) => {
         if (!response.ok) throw new Error(`Sheet request failed with ${response.status}`)
         return response.text()
