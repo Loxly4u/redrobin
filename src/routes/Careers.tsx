@@ -8,6 +8,7 @@ type Opportunity = {
   title: string
   company: string
   source: string
+  date: string
   type: string
   location: string
   detail: string
@@ -20,6 +21,7 @@ const fallbackOpportunities: Opportunity[] = [
     title: 'Sample Opportunity',
     company: 'Sample Company',
     source: 'Sample Source',
+    date: '',
     type: 'Sample role type',
     location: 'Sample location',
     detail: 'This is dummy data for preview purposes. Real job details are not currently available because the Google Sheet could not be loaded.',
@@ -81,6 +83,7 @@ const parseCsv = (csv: string): Opportunity[] => {
       title,
       company: valueFor(values, ['company', 'organization', 'employer']),
       source: valueFor(values, ['source', 'jobsource']),
+      date: valueFor(values, ['date', 'posted', 'posteddate', 'dateadded', 'addeddate', 'createdat', 'published', 'publishedat']),
       type: valueFor(values, ['type', 'employmenttype']),
       location: valueFor(values, ['location', 'place']),
       detail: valueFor(values, ['detail', 'description', 'notes']),
@@ -155,11 +158,19 @@ function Careers() {
       .finally(() => setIsLoading(false))
   }, [])
 
-  const filteredOpportunities = useMemo(() => opportunities.filter((opportunity) => {
-    const matchesQuery = `${opportunity.title} ${opportunity.company} ${opportunity.source}`.toLowerCase().includes(query.toLowerCase())
-    const matchesStatus = status === 'all' || (status === 'applied' ? applied[opportunity.id] : !applied[opportunity.id])
-    return matchesQuery && matchesStatus
-  }), [applied, opportunities, query, status])
+  const filteredOpportunities = useMemo(() => opportunities
+    .filter((opportunity) => {
+      const matchesQuery = `${opportunity.title} ${opportunity.company} ${opportunity.source}`.toLowerCase().includes(query.toLowerCase())
+      const matchesStatus = status === 'all' || (status === 'applied' ? applied[opportunity.id] : !applied[opportunity.id])
+      return matchesQuery && matchesStatus
+    })
+    .sort((first, second) => {
+      const firstTime = Date.parse(first.date)
+      const secondTime = Date.parse(second.date)
+      if (Number.isNaN(firstTime)) return Number.isNaN(secondTime) ? 0 : 1
+      if (Number.isNaN(secondTime)) return -1
+      return secondTime - firstTime
+    }), [applied, opportunities, query, status])
 
   const appliedCount = Object.values(applied).filter(Boolean).length
 
