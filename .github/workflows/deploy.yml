@@ -24,6 +24,10 @@ jobs:
 
       - name: Build app
         run: npm run build
+        env:
+          VITE_CAREERS_SHEET_CSV_URL: ${{ secrets.VITE_CAREERS_SHEET_CSV_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
