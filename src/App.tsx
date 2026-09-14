@@ -10,6 +10,7 @@ import Home from './routes/Home'
 import Methodology from './routes/Methodology'
 import PentestChecklist from './routes/PentestChecklist'
 import ResearchAdvisories from './routes/ResearchAdvisories'
+import QuestionBank from './routes/QuestionBank'
 
 const pageVariants = {
   initial: { opacity: 0, y: 16 },
@@ -48,6 +49,8 @@ function App() {
               <Route path="/arsenal" element={<Arsenal />} />
               <Route path="/pentest-checklist" element={<PentestChecklist />} />
               <Route path="/about-and-resume" element={<AboutResume />} />
+              <Route path="/pentest-questions" element={<QuestionBank kind="pentesting" />} />
+              <Route path="/red-team-questions" element={<QuestionBank kind="red-teaming" />} />
             </Routes>
           </motion.div>
         </AnimatePresence>

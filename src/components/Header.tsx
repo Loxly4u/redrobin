@@ -1,6 +1,6 @@
 import { Link, NavLink } from 'react-router-dom'
 import logo from '../assets/RedRobin.webp'
-import { Cpu, ShieldCheck, Terminal, FileText, Database, Briefcase } from 'lucide-react'
+import { Cpu, ShieldCheck, Terminal, FileText, Database, Briefcase, BookOpen } from 'lucide-react'
 
 const navLinks = [
   { href: '/', title: 'Home', icon: Cpu },
@@ -11,6 +11,8 @@ const navLinks = [
   { href: '/arsenal', title: 'Arsenal', icon: Database },
   { href: '/pentest-checklist', title: 'Checklist', icon: ShieldCheck },
   { href: '/about-and-resume', title: 'About', icon: Briefcase },
+  { href: '/pentest-questions', title: 'PT Q&A', icon: BookOpen },
+  { href: '/red-team-questions', title: 'Red Team Q&A', icon: BookOpen },
 ]
 
 function Header() {
