@@ -5,6 +5,7 @@ import Header from './components/Header'
 import AboutResume from './routes/AboutResume'
 import Arsenal from './routes/Arsenal'
 import CaseStudies from './routes/CaseStudies'
+import Careers from './routes/Careers'
 import Home from './routes/Home'
 import Methodology from './routes/Methodology'
 import PentestChecklist from './routes/PentestChecklist'
@@ -42,6 +43,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/methodology" element={<Methodology />} />
               <Route path="/case-studies" element={<CaseStudies />} />
+              <Route path="/careers" element={<Careers />} />
               <Route path="/research-and-advisories" element={<ResearchAdvisories />} />
               <Route path="/arsenal" element={<Arsenal />} />
               <Route path="/pentest-checklist" element={<PentestChecklist />} />

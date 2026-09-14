@@ -6,6 +6,7 @@ const navLinks = [
   { href: '/', title: 'Home', icon: Cpu },
   { href: '/methodology', title: 'Methodology', icon: ShieldCheck },
   { href: '/case-studies', title: 'Case Studies', icon: FileText },
+  { href: '/careers', title: 'Careers', icon: Briefcase },
   { href: '/research-and-advisories', title: 'Research', icon: Terminal },
   { href: '/arsenal', title: 'Arsenal', icon: Database },
   { href: '/pentest-checklist', title: 'Checklist', icon: ShieldCheck },
