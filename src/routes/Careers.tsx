@@ -8,6 +8,7 @@ type Opportunity = {
   title: string
   company: string
   source: string
+  isArchived: boolean
   date: string
   type: string
   location: string
@@ -21,6 +22,7 @@ const fallbackOpportunities: Opportunity[] = [
     title: 'Sample Opportunity',
     company: 'Sample Company',
     source: 'Sample Source',
+    isArchived: false,
     date: '',
     type: 'Sample role type',
     location: 'Sample location',
@@ -80,11 +82,13 @@ const parseCsv = (csv: string): Opportunity[] => {
     const values = parseRow(row)
     const title = valueFor(values, ['title', 'role', 'jobtitle'])
     const url = valueFor(values, ['url', 'link', 'joburl'])
+    const isArchived = ['yes', 'true', '1'].includes(valueFor(values, ['isarchived', 'archived']).toLowerCase())
     return {
       id: valueFor(values, ['id', 'jobid', 'opportunityid']) || `${title}-${url}-${index}`,
       title,
       company: valueFor(values, ['company', 'organization', 'employer']),
       source: valueFor(values, ['source', 'jobsource']),
+      isArchived,
       date: valueFor(values, ['date', 'posted', 'posteddate', 'dateadded', 'addeddate', 'createdat', 'published', 'publishedat']),
       type: valueFor(values, ['type', 'employmenttype']),
       location: valueFor(values, ['location', 'place']),
@@ -277,27 +281,30 @@ function Careers() {
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {filteredOpportunities.map((opportunity) => (
-            <article key={opportunity.id} className={`flex flex-col rounded-3xl border p-6 transition ${isUsingFallback ? 'border-dashed border-accent/60 bg-accent/5' : 'border-panel bg-surface/80 hover:border-accent/40 hover:bg-surface'}`}>
+            <article key={opportunity.id} className={`flex min-w-0 flex-col rounded-3xl border p-6 transition ${isUsingFallback ? 'border-dashed border-accent/60 bg-accent/5' : 'border-panel bg-surface/80 hover:border-accent/40 hover:bg-surface'}`}>
               <div className="flex-1">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <h3 className="text-xl font-semibold text-fg">{opportunity.title}</h3>
-                    <p className="mt-2 text-sm text-accent">{opportunity.company} · {opportunity.source}</p>
+                <div className="space-y-3">
+                  <h3 className="break-words text-xl font-semibold leading-tight text-fg">{opportunity.title}</h3>
+                  <p className="break-words text-sm leading-6 text-accent">{opportunity.company} · {opportunity.source}</p>
+                  <div className="flex flex-wrap gap-2 border-t border-panel pt-3">
+                    <span className={`inline-flex max-w-full rounded-full px-3 py-1 text-xs uppercase leading-5 tracking-[0.2em] ${opportunity.isArchived ? 'bg-panel text-muted' : 'bg-accent/15 text-accent'}`}>
+                      {opportunity.isArchived ? 'Expired' : 'Live'}
+                    </span>
+                    <span className={`inline-flex max-w-full rounded-full px-3 py-1 text-xs uppercase leading-5 tracking-[0.2em] ${applied[opportunity.id] ? 'bg-accent/15 text-accent' : 'bg-panel text-muted'}`}>
+                      {applied[opportunity.id] ? 'Applied' : 'Not applied'}
+                    </span>
                   </div>
-                  <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs uppercase tracking-[0.2em] ${applied[opportunity.id] ? 'bg-accent/15 text-accent' : 'bg-panel text-muted'}`}>
-                    {applied[opportunity.id] ? 'Applied' : 'Not applied'}
-                  </span>
                 </div>
-                <p className="mt-4 flex items-center gap-2 text-sm text-muted">
+                <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-muted">
                   <MapPin size={16} /> {opportunity.location} · {opportunity.type}
                 </p>
                 <p className="mt-5 text-sm leading-6 text-muted">{opportunity.detail}</p>
               </div>
-              <div className="mt-6 flex flex-wrap gap-3 border-t border-panel pt-5">
-                <a href={opportunity.url} target="_blank" rel="noreferrer" aria-disabled={isUsingFallback} onClick={(event) => { if (isUsingFallback) event.preventDefault() }} className="inline-flex items-center gap-2 rounded-2xl border border-panel px-4 py-2 text-sm font-semibold text-fg transition hover:border-accent/40 hover:text-accent">
+              <div className="mt-6 flex flex-col gap-3 border-t border-panel pt-5">
+                <a href={opportunity.url} target="_blank" rel="noreferrer" aria-disabled={isUsingFallback} onClick={(event) => { if (isUsingFallback) event.preventDefault() }} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-panel px-4 py-2 text-center text-sm font-semibold text-fg transition hover:border-accent/40 hover:text-accent">
                   View source <ExternalLink size={16} />
                 </a>
-                <button type="button" onClick={() => toggleApplied(opportunity.id)} className="inline-flex items-center gap-2 rounded-2xl bg-accent px-4 py-2 text-sm font-semibold text-bg transition hover:bg-accentLight">
+                <button type="button" onClick={() => toggleApplied(opportunity.id)} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-2 text-center text-sm font-semibold text-bg transition hover:bg-accentLight">
                   <Check size={16} /> {applied[opportunity.id] ? 'Mark not applied' : 'Mark as applied'}
                 </button>
               </div>
