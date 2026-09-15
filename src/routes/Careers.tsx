@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { BriefcaseBusiness, Check, ExternalLink, Filter, MapPin, Search } from 'lucide-react'
+import { BriefcaseBusiness, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Filter, MapPin, Search } from 'lucide-react'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 
 type Opportunity = {
@@ -108,6 +108,8 @@ function Careers() {
   const [password, setPassword] = useState('')
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<'all' | 'open' | 'applied'>('all')
+  const [jobStatus, setJobStatus] = useState<'all' | 'live' | 'expired'>('all')
+  const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(Boolean(careersCsvUrl))
   const [loadError, setLoadError] = useState('')
   const [isUsingFallback, setIsUsingFallback] = useState(!careersCsvUrl)
@@ -165,7 +167,8 @@ function Careers() {
     .filter((opportunity) => {
       const matchesQuery = `${opportunity.title} ${opportunity.company} ${opportunity.source}`.toLowerCase().includes(query.toLowerCase())
       const matchesStatus = status === 'all' || (status === 'applied' ? applied[opportunity.id] : !applied[opportunity.id])
-      return matchesQuery && matchesStatus
+      const matchesJobStatus = jobStatus === 'all' || (jobStatus === 'expired' ? opportunity.isArchived : !opportunity.isArchived)
+      return matchesQuery && matchesStatus && matchesJobStatus
     })
     .sort((first, second) => {
       const firstTime = Date.parse(first.date)
@@ -173,7 +176,16 @@ function Careers() {
       if (Number.isNaN(firstTime)) return Number.isNaN(secondTime) ? 0 : 1
       if (Number.isNaN(secondTime)) return -1
       return secondTime - firstTime
-    }), [applied, opportunities, query, status])
+    }), [applied, jobStatus, opportunities, query, status])
+
+  const pageSize = 6
+  const totalPages = Math.max(1, Math.ceil(filteredOpportunities.length / pageSize))
+  const visiblePage = Math.min(currentPage, totalPages)
+  const paginatedOpportunities = filteredOpportunities.slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [jobStatus, query, status])
 
   const appliedCount = Object.values(applied).filter(Boolean).length
 
@@ -269,18 +281,32 @@ function Careers() {
             <Search size={17} />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search roles, companies, or sources" className="w-full bg-transparent text-fg outline-none placeholder:text-muted" />
           </label>
-          <label className="flex items-center gap-3 rounded-2xl bg-surface/80 px-4 py-3 text-sm text-muted">
+          <label className="flex items-center gap-3 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
             <Filter size={17} />
-            <select value={status} onChange={(event) => setStatus(event.target.value as typeof status)} className="bg-transparent text-fg outline-none">
-              <option value="all">All opportunities</option>
-              <option value="open">Not applied</option>
-              <option value="applied">Applied</option>
-            </select>
+            <span className="relative flex min-w-0 flex-1 items-center">
+              <select aria-label="Application status" value={status} onChange={(event) => setStatus(event.target.value as typeof status)} className="w-full appearance-none rounded-xl border border-accent/20 bg-panel px-3 py-2 pr-9 text-sm text-fg outline-none transition hover:border-accent/50 focus:border-accent focus:ring-1 focus:ring-accent/40 [color-scheme:dark]">
+                <option value="all" className="bg-panel text-fg">All opportunities</option>
+                <option value="open" className="bg-panel text-fg">Not applied</option>
+                <option value="applied" className="bg-panel text-fg">Applied</option>
+              </select>
+              <ChevronDown size={16} className="pointer-events-none absolute right-3 text-accent" />
+            </span>
+          </label>
+          <label className="flex items-center gap-3 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
+            <Filter size={17} />
+            <span className="relative flex min-w-0 flex-1 items-center">
+              <select aria-label="Job status" value={jobStatus} onChange={(event) => setJobStatus(event.target.value as typeof jobStatus)} className="w-full appearance-none rounded-xl border border-accent/20 bg-panel px-3 py-2 pr-9 text-sm text-fg outline-none transition hover:border-accent/50 focus:border-accent focus:ring-1 focus:ring-accent/40 [color-scheme:dark]">
+                <option value="all" className="bg-panel text-fg">All job statuses</option>
+                <option value="live" className="bg-panel text-fg">Live jobs</option>
+                <option value="expired" className="bg-panel text-fg">Expired jobs</option>
+              </select>
+              <ChevronDown size={16} className="pointer-events-none absolute right-3 text-accent" />
+            </span>
           </label>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {filteredOpportunities.map((opportunity) => (
+          {paginatedOpportunities.map((opportunity) => (
             <article key={opportunity.id} className={`flex min-w-0 flex-col rounded-3xl border p-6 transition ${isUsingFallback ? 'border-dashed border-accent/60 bg-accent/5' : 'border-panel bg-surface/80 hover:border-accent/40 hover:bg-surface'}`}>
               <div className="flex-1">
                 <div className="space-y-3">
@@ -313,6 +339,23 @@ function Careers() {
           {filteredOpportunities.length === 0 && <p className="rounded-3xl border border-panel bg-surface/80 p-8 text-center text-sm text-muted">No opportunities match this filter.</p>}
           {authError && <p className="text-sm text-accent">{authError}</p>}
         </div>
+
+        {filteredOpportunities.length > 0 && <div className="flex flex-col items-center justify-between gap-4 border-t border-panel pt-5 sm:flex-row">
+          <p className="text-sm text-muted">Page {visiblePage} of {totalPages}</p>
+          <div className="flex items-center gap-2">
+            <button type="button" aria-label="Previous page" disabled={visiblePage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-panel text-fg transition hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40">
+              <ChevronLeft size={18} />
+            </button>
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+              <button key={page} type="button" aria-label={`Go to page ${page}`} aria-current={page === visiblePage ? 'page' : undefined} onClick={() => setCurrentPage(page)} className={`h-10 min-w-10 rounded-xl px-3 text-sm font-semibold transition ${page === visiblePage ? 'bg-accent text-bg' : 'border border-panel text-fg hover:border-accent/40 hover:text-accent'}`}>
+                {page}
+              </button>
+            ))}
+            <button type="button" aria-label="Next page" disabled={visiblePage === totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-panel text-fg transition hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40">
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>}
       </div>
 
       <div className="rounded-3xl border border-panel bg-bg/70 p-8 text-center sm:p-10">
