@@ -29,7 +29,7 @@ function App() {
   return (
     <div className="min-h-screen bg-bg text-fg">
       <Header />
-      <main className="mx-auto max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl overflow-x-hidden px-3 pb-16 pt-5 sm:px-6 sm:pb-24 sm:pt-6 lg:px-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
