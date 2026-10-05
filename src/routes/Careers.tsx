@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { BriefcaseBusiness, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Filter, MapPin, Search } from 'lucide-react'
+import { Ban, BriefcaseBusiness, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Filter, MapPin, Search } from 'lucide-react'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 
 type Opportunity = {
@@ -101,6 +101,7 @@ const parseCsv = (csv: string): Opportunity[] => {
 function Careers() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>(fallbackOpportunities)
   const [applied, setApplied] = useState<Record<string, boolean>>({})
+  const [notEligible, setNotEligible] = useState<Record<string, boolean>>({})
   const [session, setSession] = useState<Session | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [authError, setAuthError] = useState('')
@@ -135,15 +136,19 @@ function Careers() {
   useEffect(() => {
     if (!supabase || !session) {
       setApplied({})
+      setNotEligible({})
       return
     }
 
-    supabase.from('applications').select('job_id, applied').then(({ data, error }) => {
+    setApplied({})
+    setNotEligible({})
+    supabase.from('applications').select('job_id, applied, not_eligible').then(({ data, error }) => {
       if (error) {
         setAuthError(error.message)
         return
       }
       setApplied(Object.fromEntries((data || []).map((row) => [row.job_id, row.applied])))
+      setNotEligible(Object.fromEntries((data || []).map((row) => [row.job_id, row.not_eligible])))
     })
   }, [session])
 
@@ -209,6 +214,23 @@ function Careers() {
     })
     if (error) {
       setApplied((current) => ({ ...current, [jobId]: !nextApplied }))
+      setAuthError(error.message)
+    }
+  }
+
+  const toggleNotEligible = async (jobId: string) => {
+    if (!supabase || !session) return
+    const previousValue = Boolean(notEligible[jobId])
+    const nextValue = !previousValue
+    setNotEligible((current) => ({ ...current, [jobId]: nextValue }))
+    const { error } = await supabase.from('applications').upsert({
+      user_id: session.user.id,
+      job_id: jobId,
+      not_eligible: nextValue,
+      updated_at: new Date().toISOString(),
+    })
+    if (error) {
+      setNotEligible((current) => ({ ...current, [jobId]: previousValue }))
       setAuthError(error.message)
     }
   }
@@ -319,6 +341,7 @@ function Careers() {
                     <span className={`inline-flex max-w-full rounded-full px-3 py-1 text-xs uppercase leading-5 tracking-[0.2em] ${applied[opportunity.id] ? 'bg-accent/15 text-accent' : 'bg-panel text-muted'}`}>
                       {applied[opportunity.id] ? 'Applied' : 'Not applied'}
                     </span>
+                    {notEligible[opportunity.id] && <span className="inline-flex max-w-full rounded-full bg-red-500/15 px-3 py-1 text-xs uppercase leading-5 tracking-[0.2em] text-red-300">Not eligible</span>}
                   </div>
                 </div>
                 <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-muted">
@@ -332,6 +355,9 @@ function Careers() {
                 </a>
                 <button type="button" onClick={() => toggleApplied(opportunity.id)} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-2 text-center text-sm font-semibold text-bg transition hover:bg-accentLight">
                   <Check size={16} /> {applied[opportunity.id] ? 'Mark not applied' : 'Mark as applied'}
+                </button>
+                <button type="button" onClick={() => toggleNotEligible(opportunity.id)} aria-pressed={Boolean(notEligible[opportunity.id])} className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-center text-sm font-semibold transition ${notEligible[opportunity.id] ? 'border-red-400/40 bg-red-500/15 text-red-300 hover:bg-red-500/25' : 'border-panel text-muted hover:border-red-400/40 hover:text-red-300'}`}>
+                  <Ban size={16} /> {notEligible[opportunity.id] ? 'Mark eligible' : 'Mark not eligible'}
                 </button>
               </div>
             </article>
