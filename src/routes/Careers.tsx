@@ -108,7 +108,8 @@ function Careers() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [query, setQuery] = useState('')
-  const [statuses, setStatuses] = useState<Array<'open' | 'applied' | 'eligible' | 'notEligible'>>([])
+  const [eligibilityFilter, setEligibilityFilter] = useState<'all' | 'eligible' | 'notEligible'>('all')
+  const [applicationFilter, setApplicationFilter] = useState<'all' | 'applied' | 'notApplied'>('all')
   const [jobStatus, setJobStatus] = useState<'all' | 'live' | 'expired'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(Boolean(careersCsvUrl))
@@ -185,13 +186,14 @@ function Careers() {
   const filteredOpportunities = useMemo(() => opportunities
     .filter((opportunity) => {
       const matchesQuery = `${opportunity.title} ${opportunity.company} ${opportunity.source}`.toLowerCase().includes(query.toLowerCase())
-      const matchesStatus = statuses.length === 0
-        || (statuses.includes('applied') && applied[opportunity.id])
-        || (statuses.includes('open') && !applied[opportunity.id])
-        || (statuses.includes('eligible') && !notEligible[opportunity.id])
-        || (statuses.includes('notEligible') && notEligible[opportunity.id])
+      const matchesEligibility = eligibilityFilter === 'all'
+        || (eligibilityFilter === 'eligible' && !notEligible[opportunity.id])
+        || (eligibilityFilter === 'notEligible' && notEligible[opportunity.id])
+      const matchesApplication = applicationFilter === 'all'
+        || (applicationFilter === 'applied' && applied[opportunity.id])
+        || (applicationFilter === 'notApplied' && !applied[opportunity.id])
       const matchesJobStatus = jobStatus === 'all' || (jobStatus === 'expired' ? opportunity.isArchived : !opportunity.isArchived)
-      return matchesQuery && matchesStatus && matchesJobStatus
+      return matchesQuery && matchesEligibility && matchesApplication && matchesJobStatus
     })
     .sort((first, second) => {
       const firstTime = Date.parse(first.date)
@@ -199,7 +201,7 @@ function Careers() {
       if (Number.isNaN(firstTime)) return Number.isNaN(secondTime) ? 0 : 1
       if (Number.isNaN(secondTime)) return -1
       return secondTime - firstTime
-    }), [applied, jobStatus, notEligible, opportunities, query, statuses])
+    }), [applied, applicationFilter, eligibilityFilter, jobStatus, notEligible, opportunities, query])
 
   const pageSize = 6
   const totalPages = Math.max(1, Math.ceil(filteredOpportunities.length / pageSize))
@@ -208,13 +210,7 @@ function Careers() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [jobStatus, query, statuses])
-
-  const toggleStatus = (selectedStatus: 'open' | 'applied' | 'eligible' | 'notEligible') => {
-    setStatuses((current) => current.includes(selectedStatus)
-      ? current.filter((status) => status !== selectedStatus)
-      : [...current, selectedStatus])
-  }
+  }, [applicationFilter, eligibilityFilter, jobStatus, query])
 
   const appliedCount = Object.values(applied).filter(Boolean).length
 
@@ -327,22 +323,29 @@ function Careers() {
             <Search size={17} />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search roles, companies, or sources" className="w-full bg-transparent text-fg outline-none placeholder:text-muted" />
           </label>
+          <label className="flex items-center gap-3 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
+            <Filter size={17} />
+            <span className="relative flex min-w-0 flex-1 items-center">
+              <select aria-label="Eligibility filter" value={eligibilityFilter} onChange={(event) => setEligibilityFilter(event.target.value as typeof eligibilityFilter)} className="w-full appearance-none rounded-xl border border-accent/20 bg-panel px-3 py-2 pr-9 text-sm text-fg outline-none transition hover:border-accent/50 focus:border-accent focus:ring-1 focus:ring-accent/40 [color-scheme:dark]">
+                <option value="all" className="bg-panel text-fg">All eligibility</option>
+                <option value="eligible" className="bg-panel text-fg">Eligible</option>
+                <option value="notEligible" className="bg-panel text-fg">Not eligible</option>
+              </select>
+              <ChevronDown size={16} className="pointer-events-none absolute right-3 text-accent" />
+            </span>
+          </label>
           <span className="self-center rounded-full border border-accent/20 px-2 py-1 text-xs font-semibold uppercase tracking-wider text-accent">AND</span>
-          <fieldset className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
-            <legend className="sr-only">Application status filters. Select any combination.</legend>
-            <Filter size={17} aria-hidden="true" />
-            {([
-              ['open', 'Not applied'],
-              ['applied', 'Applied'],
-              ['eligible', 'Eligible'],
-              ['notEligible', 'Not eligible'],
-            ] as const).map(([value, label]) => (
-              <label key={value} className="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap">
-                <input type="checkbox" checked={statuses.includes(value)} onChange={() => toggleStatus(value)} className="accent-accent" />
-                <span>{label}</span>
-              </label>
-            ))}
-          </fieldset>
+          <label className="flex items-center gap-3 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
+            <Filter size={17} />
+            <span className="relative flex min-w-0 flex-1 items-center">
+              <select aria-label="Application filter" value={applicationFilter} onChange={(event) => setApplicationFilter(event.target.value as typeof applicationFilter)} className="w-full appearance-none rounded-xl border border-accent/20 bg-panel px-3 py-2 pr-9 text-sm text-fg outline-none transition hover:border-accent/50 focus:border-accent focus:ring-1 focus:ring-accent/40 [color-scheme:dark]">
+                <option value="all" className="bg-panel text-fg">All application statuses</option>
+                <option value="applied" className="bg-panel text-fg">Applied</option>
+                <option value="notApplied" className="bg-panel text-fg">Not applied</option>
+              </select>
+              <ChevronDown size={16} className="pointer-events-none absolute right-3 text-accent" />
+            </span>
+          </label>
           <span className="self-center rounded-full border border-accent/20 px-2 py-1 text-xs font-semibold uppercase tracking-wider text-accent">AND</span>
           <label className="flex items-center gap-3 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
             <Filter size={17} />
