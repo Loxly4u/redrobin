@@ -327,6 +327,7 @@ function Careers() {
             <Search size={17} />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search roles, companies, or sources" className="w-full bg-transparent text-fg outline-none placeholder:text-muted" />
           </label>
+          <span className="self-center rounded-full border border-accent/20 px-2 py-1 text-xs font-semibold uppercase tracking-wider text-accent">AND</span>
           <fieldset className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
             <legend className="sr-only">Application status filters. Select any combination.</legend>
             <Filter size={17} aria-hidden="true" />
@@ -342,6 +343,7 @@ function Careers() {
               </label>
             ))}
           </fieldset>
+          <span className="self-center rounded-full border border-accent/20 px-2 py-1 text-xs font-semibold uppercase tracking-wider text-accent">AND</span>
           <label className="flex items-center gap-3 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
             <Filter size={17} />
             <span className="relative flex min-w-0 flex-1 items-center">
