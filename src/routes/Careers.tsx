@@ -108,7 +108,7 @@ function Careers() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [query, setQuery] = useState('')
-  const [status, setStatus] = useState<'all' | 'open' | 'applied' | 'notEligible'>('all')
+  const [statuses, setStatuses] = useState<Array<'open' | 'applied' | 'notEligible'>>([])
   const [jobStatus, setJobStatus] = useState<'all' | 'live' | 'expired'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(Boolean(careersCsvUrl))
@@ -185,10 +185,10 @@ function Careers() {
   const filteredOpportunities = useMemo(() => opportunities
     .filter((opportunity) => {
       const matchesQuery = `${opportunity.title} ${opportunity.company} ${opportunity.source}`.toLowerCase().includes(query.toLowerCase())
-      const matchesStatus = status === 'all'
-        || (status === 'applied' && applied[opportunity.id])
-        || (status === 'open' && !applied[opportunity.id])
-        || (status === 'notEligible' && notEligible[opportunity.id])
+      const matchesStatus = statuses.length === 0
+        || (statuses.includes('applied') && applied[opportunity.id])
+        || (statuses.includes('open') && !applied[opportunity.id])
+        || (statuses.includes('notEligible') && notEligible[opportunity.id])
       const matchesJobStatus = jobStatus === 'all' || (jobStatus === 'expired' ? opportunity.isArchived : !opportunity.isArchived)
       return matchesQuery && matchesStatus && matchesJobStatus
     })
@@ -198,7 +198,7 @@ function Careers() {
       if (Number.isNaN(firstTime)) return Number.isNaN(secondTime) ? 0 : 1
       if (Number.isNaN(secondTime)) return -1
       return secondTime - firstTime
-    }), [applied, jobStatus, notEligible, opportunities, query, status])
+    }), [applied, jobStatus, notEligible, opportunities, query, statuses])
 
   const pageSize = 6
   const totalPages = Math.max(1, Math.ceil(filteredOpportunities.length / pageSize))
@@ -207,7 +207,13 @@ function Careers() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [jobStatus, query, status])
+  }, [jobStatus, query, statuses])
+
+  const toggleStatus = (selectedStatus: 'open' | 'applied' | 'notEligible') => {
+    setStatuses((current) => current.includes(selectedStatus)
+      ? current.filter((status) => status !== selectedStatus)
+      : [...current, selectedStatus])
+  }
 
   const appliedCount = Object.values(applied).filter(Boolean).length
 
@@ -320,18 +326,20 @@ function Careers() {
             <Search size={17} />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search roles, companies, or sources" className="w-full bg-transparent text-fg outline-none placeholder:text-muted" />
           </label>
-          <label className="flex items-center gap-3 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
-            <Filter size={17} />
-            <span className="relative flex min-w-0 flex-1 items-center">
-              <select aria-label="Application status" value={status} onChange={(event) => setStatus(event.target.value as typeof status)} className="w-full appearance-none rounded-xl border border-accent/20 bg-panel px-3 py-2 pr-9 text-sm text-fg outline-none transition hover:border-accent/50 focus:border-accent focus:ring-1 focus:ring-accent/40 [color-scheme:dark]">
-                <option value="all" className="bg-panel text-fg">All opportunities</option>
-                <option value="open" className="bg-panel text-fg">Not applied</option>
-                <option value="applied" className="bg-panel text-fg">Applied</option>
-                <option value="notEligible" className="bg-panel text-fg">Not eligible</option>
-              </select>
-              <ChevronDown size={16} className="pointer-events-none absolute right-3 text-accent" />
-            </span>
-          </label>
+          <fieldset className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
+            <legend className="sr-only">Application status filters. Select any combination.</legend>
+            <Filter size={17} aria-hidden="true" />
+            {([
+              ['open', 'Not applied'],
+              ['applied', 'Applied'],
+              ['notEligible', 'Not eligible'],
+            ] as const).map(([value, label]) => (
+              <label key={value} className="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap">
+                <input type="checkbox" checked={statuses.includes(value)} onChange={() => toggleStatus(value)} className="accent-accent" />
+                <span>{label}</span>
+              </label>
+            ))}
+          </fieldset>
           <label className="flex items-center gap-3 rounded-2xl border border-panel bg-surface/80 px-4 py-3 text-sm text-muted transition focus-within:border-accent/60">
             <Filter size={17} />
             <span className="relative flex min-w-0 flex-1 items-center">
