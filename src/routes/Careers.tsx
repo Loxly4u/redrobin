@@ -108,7 +108,7 @@ function Careers() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [query, setQuery] = useState('')
-  const [statuses, setStatuses] = useState<Array<'open' | 'applied' | 'notEligible'>>([])
+  const [statuses, setStatuses] = useState<Array<'open' | 'applied' | 'eligible' | 'notEligible'>>([])
   const [jobStatus, setJobStatus] = useState<'all' | 'live' | 'expired'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(Boolean(careersCsvUrl))
@@ -188,6 +188,7 @@ function Careers() {
       const matchesStatus = statuses.length === 0
         || (statuses.includes('applied') && applied[opportunity.id])
         || (statuses.includes('open') && !applied[opportunity.id])
+        || (statuses.includes('eligible') && !notEligible[opportunity.id])
         || (statuses.includes('notEligible') && notEligible[opportunity.id])
       const matchesJobStatus = jobStatus === 'all' || (jobStatus === 'expired' ? opportunity.isArchived : !opportunity.isArchived)
       return matchesQuery && matchesStatus && matchesJobStatus
@@ -209,7 +210,7 @@ function Careers() {
     setCurrentPage(1)
   }, [jobStatus, query, statuses])
 
-  const toggleStatus = (selectedStatus: 'open' | 'applied' | 'notEligible') => {
+  const toggleStatus = (selectedStatus: 'open' | 'applied' | 'eligible' | 'notEligible') => {
     setStatuses((current) => current.includes(selectedStatus)
       ? current.filter((status) => status !== selectedStatus)
       : [...current, selectedStatus])
@@ -332,6 +333,7 @@ function Careers() {
             {([
               ['open', 'Not applied'],
               ['applied', 'Applied'],
+              ['eligible', 'Eligible'],
               ['notEligible', 'Not eligible'],
             ] as const).map(([value, label]) => (
               <label key={value} className="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap">
