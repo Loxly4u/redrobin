@@ -108,7 +108,7 @@ function Careers() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [query, setQuery] = useState('')
-  const [status, setStatus] = useState<'all' | 'open' | 'applied'>('all')
+  const [status, setStatus] = useState<'all' | 'open' | 'applied' | 'notEligible'>('all')
   const [jobStatus, setJobStatus] = useState<'all' | 'live' | 'expired'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(Boolean(careersCsvUrl))
@@ -153,25 +153,42 @@ function Careers() {
   }, [session])
 
   useEffect(() => {
-    fetch(`${careersCsvUrl}${careersCsvUrl.includes('?') ? '&' : '?'}t=${Date.now()}`)
-      .then((response) => {
-        if (!response.ok) throw new Error(`Sheet request failed with ${response.status}`)
-        return response.text()
-      })
-      .then((csv) => {
-        const sheetOpportunities = parseCsv(csv)
-        if (!sheetOpportunities.length) throw new Error('The sheet did not contain any rows with a title.')
-        setOpportunities(sheetOpportunities)
-        setIsUsingFallback(false)
-      })
-      .catch(() => setLoadError('Could not load the Google Sheet. Showing the local fallback list.'))
-      .finally(() => setIsLoading(false))
+    let isActive = true
+
+    const loadOpportunities = async () => {
+      setIsLoading(true)
+      setLoadError('')
+      const response = await fetch(`${careersCsvUrl}${careersCsvUrl.includes('?') ? '&' : '?'}t=${Date.now()}`)
+      if (!response.ok) throw new Error(`Sheet request failed with ${response.status}`)
+      const sheetOpportunities = parseCsv(await response.text())
+      if (!sheetOpportunities.length) throw new Error('The sheet did not contain any rows with a title.')
+
+      if (!isActive) return
+      setOpportunities(sheetOpportunities)
+      setIsUsingFallback(false)
+      setIsLoading(false)
+    }
+
+    void loadOpportunities().catch((error: unknown) => {
+      if (!isActive) return
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      setLoadError(`Could not load the Google Sheet: ${message}. Showing the local fallback list.`)
+      setIsUsingFallback(true)
+      setIsLoading(false)
+    })
+
+    return () => {
+      isActive = false
+    }
   }, [])
 
   const filteredOpportunities = useMemo(() => opportunities
     .filter((opportunity) => {
       const matchesQuery = `${opportunity.title} ${opportunity.company} ${opportunity.source}`.toLowerCase().includes(query.toLowerCase())
-      const matchesStatus = status === 'all' || (status === 'applied' ? applied[opportunity.id] : !applied[opportunity.id])
+      const matchesStatus = status === 'all'
+        || (status === 'applied' && applied[opportunity.id])
+        || (status === 'open' && !applied[opportunity.id])
+        || (status === 'notEligible' && notEligible[opportunity.id])
       const matchesJobStatus = jobStatus === 'all' || (jobStatus === 'expired' ? opportunity.isArchived : !opportunity.isArchived)
       return matchesQuery && matchesStatus && matchesJobStatus
     })
@@ -181,7 +198,7 @@ function Careers() {
       if (Number.isNaN(firstTime)) return Number.isNaN(secondTime) ? 0 : 1
       if (Number.isNaN(secondTime)) return -1
       return secondTime - firstTime
-    }), [applied, jobStatus, opportunities, query, status])
+    }), [applied, jobStatus, notEligible, opportunities, query, status])
 
   const pageSize = 6
   const totalPages = Math.max(1, Math.ceil(filteredOpportunities.length / pageSize))
@@ -310,6 +327,7 @@ function Careers() {
                 <option value="all" className="bg-panel text-fg">All opportunities</option>
                 <option value="open" className="bg-panel text-fg">Not applied</option>
                 <option value="applied" className="bg-panel text-fg">Applied</option>
+                <option value="notEligible" className="bg-panel text-fg">Not eligible</option>
               </select>
               <ChevronDown size={16} className="pointer-events-none absolute right-3 text-accent" />
             </span>
